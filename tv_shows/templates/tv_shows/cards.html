@@ -1,0 +1,52 @@
+{% load static %}
+{% if tv_shows %}
+<div class='cards'>
+    {% for tv_show in tv_shows %}
+        <div class="card-container">
+            <div class='card'>
+
+                {# Add to collection button  #}
+                {% if user.is_authenticated %}
+                <a class="add-collection" title="Add to collection" style="cursor: pointer" data-url="{% url 'user_tv_show-create' user.username %}" data-exists_url="{% url 'user_tv_show-exists' %}" data-username="{{user.username}}" data-tmdb_id="{{tv_show.tmdb_id}}" data-title='{{tv_show.title}}'>
+                    <span class="fa-stack fa-1x">
+                        <i class="fa-solid fa-bookmark fa-stack"></i>
+                        <i class="fa-solid fa-plus fa-stack-1x fa-inverse" style="top: -10%"></i>
+                    </span>
+                </a>
+                {% endif %}
+
+                <div class='card-poster'>
+                    {% if tv_show.poster_path %}
+                        <a href="{% url 'tv_show-detail' tv_show.tmdb_id %}">
+                            <img src={{ poster_base_url|add:poster_sizes.4|add:tv_show.poster_path }}></img>
+                        </a>
+                    {% else %}
+                        <img src='{% static "images/poster_default.png" %}'>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {# TV Show title  #}
+                <h5 class="card-title">
+                    <a href="{% url 'tv_show-detail' tv_show.tmdb_id %}">
+                        {{ tv_show.title }}
+                    </a>
+                </h5>
+
+                {# Release date  #}
+                <div class="card-title text-muted">{{ tv_show.first_air_date|date:'M j, Y' }}</div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style='text-align: center'>
+    Looks empty here :/
+</div>
+{% endif %}
+
+<div id='load_more'>
+    {% if tv_shows.has_next %}
+        <button class='btn btn-primary' data-page='{{ tv_shows.next_page_number }}'>Load more</button>
+    {% endif %}
+</div>

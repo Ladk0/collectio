@@ -1,0 +1,43 @@
+<form method="post">{% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="field-wrapper" hidden>
+        {{ form.user.errors }}
+        <label for="{{ form.user.id_for_label }}" class='form-label'>User:</label>
+        {{ form.user }}
+    </div>
+
+    <div class="field-wrapper" hidden>
+        {{ form.movie.errors }}
+        <label for="{{ form.movie.id_for_label }}" class='form-label'>Movie:</label>
+        {{ form.movie }}
+    </div>
+
+    <div style="display: flex; gap: 1rem;" class="field-wrapper">
+        <div style='flex: 1 1 0px'>
+            {{ form.status.errors }}
+            <label for="{{ form.status.id_for_label }}" class='form-label'>Status:</label>
+            {{ form.status }}
+        </div>
+
+        <div style='flex: 1 1 0px'>
+            {{ form.rating.errors }}
+            <label for="{{ form.rating.id_for_label }}" class='form-label'>Rating:</label>
+            {{ form.rating }}
+        </div>
+    </div>
+
+    <div class="field-wrapper">
+        {{ form.comment.errors }}
+        <label for="{{ form.comment.id_for_label }}" class='form-label'>Comment:</label>
+        {{ form.comment }}
+    </div>
+
+    <div class="field-wrapper">
+        {{ form.date_watched.errors }}
+        <label for="{{ form.date_watched.id_for_label }}">Date watched:</label>
+        {{ form.date_watched }}
+    </div>
+
+    <input class='btn btn-primary' type="button" id="submit" value="Save" style='width: 100%'>
+</form>

@@ -1,0 +1,119 @@
+{% extends 'collectio/base.html' %}
+{% load static %}
+
+{% block title %}{{ movie.title }} - {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'styles/browse.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'movie-list' %}">Movies</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ movie.title }}</li>
+        </ol>
+    </nav>
+
+    <div id='posters'>
+        <div id='poster'>
+            {% if movie.poster_path %}
+                <img src="{{ poster_base_url|add:poster_sizes.6|add:movie.poster_path }}" alt="movie image">
+            {% else %}
+                <img src='{% static "images/poster_default.png" %}'>
+            {% endif %}
+        </div>
+        <div id="backdrop">
+            {% if movie.backdrop_path %}
+                <img src="{{ poster_base_url|add:poster_sizes.6|add:movie.backdrop_path }}">
+            {% else %}
+                <img src='{% static "images/backdrop_default.png" %}'>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Movie title and Add to collection button #}
+    <div class="row row-cols-2 align-items-center" style="padding-top: 1rem">
+        <div class="col">
+            <h3 class="card-title">{{ movie.title }} {% if movie.release_date %}({{ movie.release_date.year }}){% endif %}</h3>
+        </div>
+
+        {% if user.is_authenticated %}
+            <div class="col" style="text-align: right">
+                <button class="btn btn-sm btn-primary" title="Add to collection" style="cursor: pointer" data-url="{% url 'user_movie-create' user.username %}" data-exists_url="{% url 'user_movie-exists' %}" data-username="{{user.username}}" data-tmdb_id="{{movie.tmdb_id}}" data-title='{{movie.title}}'>
+                    <i class="fas fa-plus"></i> Add to collection
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Genres and release date #}
+    <div class="row align-items-center" style="margin-bottom: 8px">
+        {% for genre in movie.moviegenre_set.all %}
+            <div class="col-auto" style="padding-right: 0">
+                <span class="badge bg-primary" style="width: content-box">{{ genre.genre.name }}</span>
+            </div>
+        {% endfor %}
+
+        <div class="col" style="text-align: right">
+            <h6 style="margin: 0">{% if movie.release_date %}Release date:
+                {{ movie.release_date|date:'M j, Y' }}{% endif %}</h6>
+        </div>
+    </div>
+
+    {# Overview #}
+    <div class="card-text" style="margin-top: 1rem; margin-bottom: 8px">
+        <h5>Overview:</h5>
+        {% if movie.overview %}
+            {{ movie.overview }}
+        {% else %}
+            <span>Could not find overview for this movie.</span>
+        {% endif %}
+    </div>
+    <hr>
+
+    {# Directors #}
+    <div class="row">
+        <div class="col">
+            <h5>Directed by:</h5>
+            {% if directors %}
+                {% for director in directors %}
+                    <b>{{ director }}</b>{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            {% else %}
+                <span>Could not find directors for this movie.</span>
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+
+    {# Actors #}
+    <div class="row">
+        <div class="col">
+            <h5>Top Billed Cast:</h5>
+            {% if actors %}
+                {% for actor, character in actors.items %}
+                    <b>{{ actor }}</b>{% if character %} ({{ character }}){% endif %}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            {% else %}
+                <span>Could not find cast for this movie.</span>
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $(window).on("load", function() {
+            $('#poster').css('flex', $('#poster img').width() / $('#poster img').height() + ' 1 0%');
+            $('#backdrop').css('flex', $('#backdrop img').width() / $('#backdrop img').height() + ' 1 0%');
+            $('#posters').css('visibility', 'visible');
+        })
+    });
+</script>
+<script src="{% static 'scripts/add-collection.js' %}"></script>
+<script src="{% static 'scripts/alert.js' %}"></script>
+{% endblock %}

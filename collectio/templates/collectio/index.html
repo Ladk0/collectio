@@ -1,0 +1,101 @@
+{% extends 'collectio/base.html' %}
+{% load static %}
+
+{% block title %}Home - {% endblock %}
+
+{% block content %}
+    <h3 style="padding-bottom: 1rem">Popular Now</h3>
+
+    <a href="{% url 'movie-list' %}">
+        <h4>Movies <a class="btn link-chevron"><i class="fas fa-chevron-right text-primary"></i></a></h4>
+    </a>
+    <hr>
+    <div class='cards'>
+        {% for movie in movies %}
+            <div class="card-container">
+                <div class='card'>
+    
+                    {# Add to collection button  #}
+                    {% if user.is_authenticated %}
+                        <a class="add-collection" title="Add to collection" style="cursor: pointer" data-url="{% url 'user_movie-create' user.username %}" data-exists_url="{% url 'user_movie-exists' %}" data-username="{{user.username}}" data-tmdb_id="{{ movie.tmdb_id }}" data-title='{{ movie.title }}'>
+                            <span class="fa-stack fa-1x">
+                                <i class="fa-solid fa-bookmark fa-stack"></i>
+                                <i class="fa-solid fa-plus fa-stack-1x fa-inverse" style="top: -10%"></i>
+                            </span>
+                        </a>
+                    {% endif %}
+    
+                    <div class='card-poster'>
+                        <a href="{% url 'movie-detail' movie.tmdb_id %}">
+                            <img src={{ poster_base_url }}{{ movie.poster_path }}></img>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {# Title #}
+                    <div class="row">
+                        <h5 class="card-title">
+                            <a href="{% url 'movie-detail' movie.tmdb_id %}">
+                                {{ movie.title }}
+                            </a>
+                        </h5>
+                    </div>
+    
+                    {# Release date  #}
+                    <div class="row">
+                        <span class="card-title text-muted">{{ movie.release_date|date:'M j, Y' }}</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'tv_show-list' %}">
+        <h4>TV Shows <a class="btn link-chevron"><i class="fas fa-chevron-right text-primary"></i></a></h4>
+    </a>
+    <hr>
+    <div class='cards'>
+        {% for tv_show in tv_shows %}
+            <div class="card-container">
+                <div class='card'>
+    
+                    {# Add to collection button  #}
+                    {% if user.is_authenticated %}
+                        <a class="add-collection" title="Add to collection" style="cursor: pointer" data-url="{% url 'user_tv_show-create' user.username %}" data-exists_url="{% url 'user_tv_show-exists' %}" data-username="{{user.username}}" data-tmdb_id="{{ tv_show.tmdb_id }}" data-title='{{ tv_show.title }}'>
+                            <span class="fa-stack fa-1x">
+                                <i class="fa-solid fa-bookmark fa-stack"></i>
+                                <i class="fa-solid fa-plus fa-stack-1x fa-inverse" style="top: -10%"></i>
+                            </span>
+                        </a>
+                    {% endif %}
+    
+                    <div class='card-poster'>
+                        <a href="{% url 'tv_show-detail' tv_show.tmdb_id %}">
+                            <img src={{ poster_base_url }}{{ tv_show.poster_path }}></img>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {# Title #}
+                    <div class="row">
+                        <h5 class="card-title">
+                            <a href="{% url 'tv_show-detail' tv_show.tmdb_id %}">
+                                {{ tv_show.title }}
+                            </a>
+                        </h5>
+                    </div>
+    
+                    {# Release date  #}
+                    <div class="row">
+                        <span class="card-title text-muted">{{ tv_show.first_air_date|date:'M j, Y' }}</span>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'scripts/alert.js' %}"></script>
+<script src="{% static 'scripts/add-collection.js' %}"></script>
+{% endblock %}

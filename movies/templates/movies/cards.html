@@ -1,0 +1,52 @@
+{% load static %}
+{% if movies %}
+<div class='cards'>
+    {% for movie in movies %}
+        <div class="card-container">
+            <div class='card'>
+
+                {# Add to collection button  #}
+                {% if user.is_authenticated %}
+                <a class="add-collection" title="Add to collection" style="cursor: pointer" data-url="{% url 'user_movie-create' user.username %}" data-exists_url="{% url 'user_movie-exists' %}" data-username="{{user.username}}" data-tmdb_id="{{movie.tmdb_id}}" data-title='{{movie.title}}'>
+                    <span class="fa-stack fa-1x">
+                        <i class="fa-solid fa-bookmark fa-stack"></i>
+                        <i class="fa-solid fa-plus fa-stack-1x fa-inverse" style="top: -10%"></i>
+                    </span>
+                </a>
+                {% endif %}
+
+                <div class='card-poster'>
+                    {% if movie.poster_path %}
+                        <a href="{% url 'movie-detail' movie.tmdb_id %}">
+                            <img src={{ poster_base_url|add:poster_sizes.4|add:movie.poster_path }}></img>
+                        </a>
+                    {% else %}
+                        <img src='{% static "images/poster_default.png" %}'>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {# TV Show title  #}
+                <h5 class="card-title">
+                    <a href="{% url 'movie-detail' movie.tmdb_id %}">
+                        {{ movie.title }}
+                    </a>
+                </h5>
+
+                {# Release date  #}
+                <div class="card-title text-muted">{{ movie.release_date|date:'M j, Y' }}</div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style='text-align: center'>
+    Looks empty here :/
+</div>
+{% endif %}
+
+<div id='load_more'>
+    {% if movies.has_next %}
+        <button class='btn btn-primary' data-page='{{ movies.next_page_number }}'>Load more</button>
+    {% endif %}
+</div>

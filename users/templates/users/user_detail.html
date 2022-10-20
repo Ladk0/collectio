@@ -1,0 +1,80 @@
+{% extends 'collectio/base.html' %}
+{% load static %}
+
+{% block title %}{{ user.username }} - {% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'users/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div id="profile">
+
+        {# User info column #}
+        <div id="user-info">
+
+            {# User image #}
+            <img id="user-img" src="{{ user.userprofile.image.url }}" alt="">
+
+            {# User info #}
+            <h3>{{ user.username }}
+                {% if request.user.username == user.username %}
+                    <a href='{% url "user-update" user.username %}' class="btn" style='padding: 0;'>
+                        <i class="fa-solid fa-cog text-primary"></i>
+                    </a>
+                {% endif %}
+            </h3>
+            <span>{{ user.first_name }} {{ user.last_name }}</span>
+
+        </div>
+
+        {# User collections statistics column #}
+        <div id="stats">
+            <h3>Statistics</h3>
+
+                {% for item in items %}
+                    <div>
+
+                        {# Collection title #}
+                        {% if request.user == user %}
+                            <a href="{{ item.url }}">
+                                <h5 class='item-title'>{{ item.title }}
+                                    <a class="btn link-chevron">
+                                        <i class="fa-solid fa-chevron-right text-primary"></i>
+                                    </a>
+                                </h5>
+                            </a>
+                        {% else %}
+                            <h5 class='item-title'>{{ item.title }}</h5>
+                        {% endif %}
+                        <hr>
+
+                        {# Collection items #}
+                        <div class='cards'>
+                            {% for item_card, item_status in item.list %}
+
+                                <div class='card-container'>
+                                    <div class='card'>
+                                        {# Collection poster #}
+                                        <div class='card-poster'>
+                                            <img src="{{ poster_base_url|add:item_card.poster_path }}" title="{{ item_card.title }}, {{ item_status }}" alt="item poster">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            {% endfor %}
+                        </div>
+
+                        {# Statuses bar chart #}
+                        <div class="item-status-chart">
+                            {% for item_status, count, percent in item.statuses %}
+                                <div title="{{ item_status }}: {{ count }}" style="width: {{ percent }}%; background-color: {% cycle 'var(--status-green)' 'var(--status-blue)' 'var(--status-yellow)' 'var(--status-grey)' 'var(--status-red)' %}"></div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

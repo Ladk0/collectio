@@ -1,0 +1,110 @@
+{% extends 'collectio/base.html' %}
+{% load static %}
+
+{% block title %}TV Shows - {% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'styles/browse.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/slimselect.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class='header'>
+    <div>
+        <h3 id='browse_title'><span></span>TV Shows</h3>
+    </div>
+    <div class='search-container'>
+        <input id='#search_input' class="search form-control filter-input" data-filter='search' type="search" placeholder="Search"/>
+    </div>
+    <div class='dropdown' style='position: relative;'>
+        <button id='filters_collapse' class='btn btn-sm btn-primary' type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-solid fa-filter"></i>
+        </button>
+        <ul class='dropdown-menu dropdown-menu-end'>
+            <li>
+                <div id='filters'>
+
+                    {# Sort by select #}
+                    <div id="sort_filter">
+                        <label for="sort_by" class="form-label">Sort by</label>
+                        <div class="btn-group d-flex">
+                            <input id="sort_popularity" class="btn-check filter-input" data-filter='sort_by' type="radio" name="sort_by" value="popularity" autocomplete="off">
+                            <label for="sort_popularity" class="btn btn-outline-primary">Popularity</label>
+                            <input id="sort_rating" class="btn-check filter-input" data-filter='sort_by' type="radio" name="sort_by" value="rating" autocomplete="off">
+                            <label for="sort_rating" class="btn btn-outline-primary">Rating</label>
+                        </div>
+                    </div>
+                    
+                    <div id="genres_filter">
+                        <label for="genres_input" class="form-label">Genres</label>
+                        <select id="genres_input" data-filter='genres' class="filter-input" multiple name="genres">
+                            {% for genre in genres %}
+                                <option value="{{ genre.name }}">{{ genre.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {# Date range #}
+                    <div id="date_filter">
+                        <fieldset>
+                            <legend style="font-size: 1rem;">Release date</legend>
+                                <div style="flex-grow: 1">
+                                    <label class="form-label" style="font-size: 0.9rem;" for="min_rating_input">from</label>
+                                    <input id="min_date_input" data-filter='min_date' class="form-control filter-input" type="date" laceholder="-">
+                                </div>
+
+                                <div style="flex-grow: 1">
+                                    <label class="form-label" style="font-size: 0.9rem;" for="max_rating_input">to</label>
+                                    <input id="max_date_input" data-filter='max_date' class="form-control filter-input" type="date" placeholder="-">
+                                </div>
+                        </fieldset>
+                    </div>
+                    
+                    {# Reset filters button #}
+                    <div>
+                        <button id="reset_filters" class="btn btn-danger" title="Reset all filters">
+                            <i class="fa-solid fa-filter-circle-xmark"></i> Reset
+                        </button>
+                    </div>
+
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<div id='cards_container'>
+    {% include 'tv_shows/cards.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'scripts/slimselect.min.js' %}"></script>
+<script src="{% static 'scripts/browse-filters.js' %}"></script>
+<script src="{% static 'scripts/add-collection.js' %}"></script>
+<script src="{% static 'scripts/alert.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $('#filters').click(function(e) {
+            e.stopPropagation();
+        });
+
+        var select = new SlimSelect({
+            select: '#genres_input',
+            placeholder: 'Select genres',
+            closeOnSelect: false
+        })
+
+        $('#filters').on('click', function() {
+            select.close();
+        })
+
+        $('.ss-main').on('click', function(e) {
+            e.stopPropagation();
+        })
+
+        $('#reset_filters').click(function() {
+            select.set([]);
+        })
+    })
+</script>
+{% endblock %}

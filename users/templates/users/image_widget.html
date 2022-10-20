@@ -1,0 +1,8 @@
+<p>
+    <label for='image_input'>
+        <img class='profile-pic' src="{% if widget.value.url %}{{ widget.value.url }}{% else %}/media/users/images/default.png{% endif %}" alt="user image" style="align-self:middle; width: 200px; height:200px; object-fit: cover; border-radius: 50%; cursor: pointer;"><br/>
+        <input type="checkbox" class='form-check-input' name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}" {% if widget.attrs.disabled %} disabled{% endif %}>
+        <label for="{{ widget.checkbox_id }}">{{ widget.clear_checkbox_label }}</label>
+    </label>
+</p>
+<input id='image_input' type="{{ widget.type }}" style="display: none" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>

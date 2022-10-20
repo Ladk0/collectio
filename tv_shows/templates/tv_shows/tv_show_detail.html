@@ -1,0 +1,209 @@
+{% extends 'collectio/base.html' %}
+{% load static %}
+
+{% block title %}{{ tv_show.title }} - {% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'styles/browse.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tv_show-list' %}">TV Shows</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ tv_show.title }}</li>
+        </ol>
+    </nav>
+
+    <div id='posters'>
+        <div id='poster'>
+            {% if tv_show.poster_path %}
+                <img src="{{ poster_base_url|add:poster_sizes.6|add:tv_show.poster_path }}" alt="tv_show image">
+            {% else %}
+                <img src='{% static "images/poster_default.png" %}'>
+            {% endif %}
+        </div>
+        <div id="backdrop">
+            {% if tv_show.backdrop_path %}
+                <img src="{{ poster_base_url|add:poster_sizes.6|add:tv_show.backdrop_path }}">
+            {% else %}
+                <img src='{% static "images/backdrop_default.png" %}'>
+            {% endif %}
+        </div>
+    </div>
+
+    {# tv_show title and Add to collection button #}
+    <div class="row row-cols-2 align-items-center" style="padding-top: 1rem">
+        <div class="col">
+            <h3 class="card-title">{{ tv_show.title }} {% if tv_show.first_air_date %}({{ tv_show.first_air_date.year }}){% endif %}</h3>
+        </div>
+
+        {% if user.is_authenticated %}
+            <div class="col" style="text-align: right">
+                <button class="btn btn-sm btn-primary" title="Add to collection" style="cursor: pointer" data-url="{% url 'user_tv_show-create' user.username %}" data-exists_url="{% url 'user_tv_show-exists' %}" data-username="{{ user.username }}" data-tmdb_id="{{ tv_show.tmdb_id }}" data-title='{{ tv_show.title }}'>
+                    <i class="fas fa-plus"></i> Add to collection
+                </button>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Genres and release date #}
+    <div class="row align-items-center" style="margin-bottom: 8px">
+        {% for genre in tv_show.tvshowgenre_set.all %}
+            <div class="col-auto" style="padding-right: 0">
+                <span class="badge bg-primary" style="width: content-box">{{ genre.genre.name }}</span>
+            </div>
+        {% endfor %}
+
+        <div class="col" style="text-align: right">
+            <h6 style="margin: 0">{% if tv_show.first_air_date %}First air date:
+                {{ tv_show.first_air_date|date:'M j, Y' }}{% endif %}</h6>
+        </div>
+    </div>
+
+    {# Overview #}
+    <div class="card-text" style="margin-top: 1rem; margin-bottom: 8px">
+        <h5>Overview:</h5>
+        {% if tv_show.overview %}
+            {{ tv_show.overview }}
+        {% else %}
+            <span>Could not find an overview for this tv show.</span>
+        {% endif %}
+    </div>
+    <hr>
+
+    <h5>Seasons:</h5>
+    {# Open seasons container if there are more then 1 season #}
+    {% if tv_show.seasons|length > 1 %}
+        <div id="seasons" class="container card"
+             style="padding-top: 1rem; height: calc(303px + 2rem); overflow: hidden; transition: height 1s">
+    {% endif %}
+
+    {% for season in tv_show.seasons %}
+        <div class="card mb-3" style='overflow: visible'>
+            <div class="row g-0">
+
+                {# Season poster #}
+                <div class="col-md-4" style="width: fit-content">
+                    <a href="{% url 'season-detail' tv_show.tmdb_id season.number %}">
+                        {% if season.poster_path %}
+                            <img src="{{ poster_base_url|add:poster_sizes.6|add:season.poster_path }}" class="img-fluid rounded-start" style="height: 200px">
+                        {% else %}
+                            <div style='height: 200px; padding: 1rem; background-color: #E5E5E5;'>
+                                <i class="fa-solid fa-film" style='color: #CECFD1; height: 100px; position: relative; top: 50%; left: 50%; transform: translate(-50%, -50%)'></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                </div>
+
+                {# Season info #}
+                <div class="col">
+                    <div class="card-body" style='padding: 1rem'>
+                        <div class="row">
+                            <div class="col">
+                                <a href="{% url 'season-detail' tv_show.tmdb_id season.number %}">
+                                    <h5 class="card-title">
+                                        {{ season.title }}
+                                        {% if season.first_air_date %}
+                                            ({{ season.first_air_date.year }})
+                                        {% endif %}
+                                    </h5>
+                                </a>
+                            </div>
+
+                            <div class="col text-muted" style="text-align: right">
+                                {% if season.first_air_date %}
+                                    {{ season.first_air_date|date:"M j, Y" }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            {% if season.overview %}
+                                {{ season.overview }}
+                            {% else %}
+                                Could not find an overview for this season.
+                            {% endif %}
+                        </p>
+                        <p class="card-text"><small class="text-muted">{{ season.episode_set.all|length }} {% if season.episode_set.all|length > 1 %}episodes{% else %}episode{% endif %}</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    {% if tv_show.seasons|length > 1 %}
+        <fade/>
+        </div>
+        <div class="text-center">
+            <a id='seasons_button' class="btn btn-primary btn-sm rounded-pill" role="button"
+            style="position: relative; top: -15px"><i class="fa fa-chevron-down"></i> Show more</a>
+        </div>
+    {% endif %}
+    <hr>
+
+    {# Directors #}
+    <div class="row">
+        <div class="col">
+            <h5>Directed by:</h5>
+            {% if directors %}
+                {% for director in directors %}
+                    <b>{{ director }}</b>{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            {% else %}
+                <span>Could not find directors for this tv show.</span>
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+
+    {# Actors #}
+    <div class="row">
+        <div class="col">
+            <h5>Top Billed Cast:</h5>
+            {% if actors %}
+                {% for actor, character in actors.items %}
+                    <b>{{ actor }}</b>{% if character %} ({{ character }}){% endif %}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            {% else %}
+                <span>Could not find cast for this tv show.</span>
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    $(document).ready(function() {
+        
+        $(window).on("load", function() {
+            $('#poster').css('flex', $('#poster img').width() / $('#poster img').height() + ' 1 0%');
+            $('#backdrop').css('flex', $('#backdrop img').width() / $('#backdrop img').height() + ' 1 0%');
+            $('#posters').css('visibility', 'visible');
+        })
+
+        $('#seasons_button').click(function() {
+            let height = 0
+            let seasons = $('#seasons')
+            let cards = $('#seasons > .card')
+    
+            if ($(this).text() === ' Show more') {
+                $(this).html('<i class="fa fa-chevron-up"></i> Show less')
+                $(cards).each(function(i, obj) {
+                    height += $(obj).height() + 18
+                })
+                $(seasons).css('height', 'calc(' + height + 'px + 2rem)')
+                $(seasons).find('fade').remove()
+            } else {
+                $(this).html('<i class="fa fa-chevron-down"></i> Show more')
+                height = $(cards[0]).height() + $(cards[1]).height() / 2 + 3
+                $(seasons).css('height', 'calc(' + height + 'px + 2rem)')
+                $(seasons).append('<fade/>')
+            }
+        })
+    });
+</script>
+<script src="{% static 'scripts/add-collection.js' %}"></script>
+<script src="{% static 'scripts/alert.js' %}"></script>
+{% endblock %}

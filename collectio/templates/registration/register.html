@@ -1,0 +1,82 @@
+{% extends 'collectio/base.html' %}
+
+{% block title %}Register - {% endblock %}
+
+{% block content %}
+    <div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class='form'>
+                <div style='text-align: center'>
+                    <label for="image" class='form-label'>Image</label>
+                    {{ profile_form.image }}
+                    {{ profile_form.image.errors }}
+                </div>
+
+                <div>
+                    <label for="username" class='form-label'>Username</label>
+                    <input id="username" class='form-control' type="text" name="username">
+                    {{ user_form.username.errors }}
+                </div>
+
+                <div>
+                    <label for="email" class='form-label'>E-mail</label>
+                    <input id="email" class='form-control' type="email" name="email">
+                    {{ user_form.email.errors }}
+                </div>
+
+                <div>
+                    <label for="password1" class='form-label'>Password</label>
+                    <input id="password1" class='form-control' type="password" name="password1">
+                    {{ user_form.password1.errors }}
+                </div>
+
+                <div>
+                    <label for="password2" class='form-label'>Repeat password</label>
+                    <input id="password2" class='form-control' type="password" name="password2">
+                    {{ user_form.password2.errors }}
+                </div>
+
+                <div>
+                    <label for="first_name" class='form-label'>First Name</label>
+                    <input id="first_name" class='form-control' type="text" name="first_name">
+                    {{ user_form.first_name.errors }}
+                </div>
+
+                <div>
+                    <label for="last_name" class='form-label'>Last Name</label>
+                    <input id="last_name" class='form-control' type="text" name="last_name">
+                    {{ user_form.last_name.errors }}
+                </div>
+
+                <div>
+                    <button class='btn btn-primary' type="submit">Sign Up</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+	
+        var readURL = function(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+    
+                reader.onload = function (e) {
+                    $('.profile-pic').attr('src', e.target.result);
+                }
+        
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+       
+        $('#image_input').on('change', function(){
+            readURL(this);
+        });
+    });
+</script>
+{% endblock %}

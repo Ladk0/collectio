@@ -1,0 +1,94 @@
+
+
+.card:hover .card-info {
+    opacity: 1;
+}
+
+.card:hover .card-poster img {
+    transform: scale(1.1);
+}
+
+.card-info {
+    opacity: 0;
+    position: absolute;
+    padding: 1rem;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    gap: 0.25rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: smaller;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    transition: opacity 0.2s;
+}
+
+.card-added-updated {
+    position: absolute;
+    top: 2%;
+    right: 2%;
+}
+
+.card-info .action-buttons {
+    margin-top: 1rem;
+}
+
+.card-info > .info-field {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.card-title {
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.info-field > div:last-child {
+    color: lightgrey;
+}
+
+.card-comment {
+    color: lightgrey;
+    max-height: 40%;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    word-break: break-word;
+}
+
+/* Card comment scrollbar styles */
+/* width */
+.card-comment::-webkit-scrollbar {
+    width: 5px;
+}
+
+/* Handle */
+.card-comment::-webkit-scrollbar-thumb {
+    background: lightgrey;
+    border-radius: 0.25rem;
+}
+
+/* Handle on hover */
+.card-comment::-webkit-scrollbar-thumb:hover {
+    background: white;
+}
+
+.action-buttons > * {
+    width: 32px;
+    height: 32px;
+}
+
+.status-ribbon {
+    z-index: 1;
+    height: 1rem;
+}
+
+.air-date-range {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 1rem
+}

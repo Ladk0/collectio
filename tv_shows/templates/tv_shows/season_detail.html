@@ -1,0 +1,122 @@
+{% extends 'collectio/base.html' %}
+{% load static %}
+
+{% block title %}{{ season.tv_show.title }}: {{ season.title }} - {% endblock %}
+
+{% block styles %}
+    <style>
+        .cleared {
+            filter: blur(0) !important;
+            object-fit: cover;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tv_show-list' %}">TV Shows</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tv_show-detail' season.tv_show.tmdb_id %}">{{ season.tv_show.title }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ season.title }}</li>
+        </ol>
+    </nav>
+
+    <h3 class="card-title">
+        {{ season.tv_show.title }}: {{ season.title }}
+        {% if season.tv_show.first_air_date %}
+            ({{ season.tv_show.first_air_date.year }})
+        {% endif %}</h3>
+    <div class="card mb-3">
+        <div class="row g-0">
+            <div class="col-md-4" style="width: fit-content;">
+                {% if season.poster_path %}
+                    <img src="{{ poster_base_url|add:poster_sizes.6|add:season.poster_path }}" class="img-fluid rounded-start" style="height: 200px; width: auto;">
+                {% else %}
+                    <div style='height: 200px; padding: 1rem; background-color: #E5E5E5;'>
+                        <i class="fa-solid fa-film" style='color: #CECFD1; height: 100px; position: relative; top: 50%; left: 50%; transform: translate(-50%, -50%)'></i>
+                    </div>
+            {% endif %}
+            </div>
+            <div class="col">
+                <div class="card-body" style='padding: 1rem'>
+                    <p class="card-text">
+                        {% if season.overview %}
+                            {{ season.overview }}
+                        {% else %}
+                            Could not find an overview for this season.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 style="padding-top: 1rem">{{ season.episode_set.all|length }} {% if season.episode_set.all|length > 1 %}episodes{% else %}episode{% endif %}</h5>
+
+    {% for episode in season.episode_set.all %}
+        <div class="card mb-3">
+            <div class="row g-0">
+                <div class="col-md-4 episode-poster" style="width: fit-content; overflow: hidden; position: relative;">
+                    {% if episode.poster_path %}
+                        <img src="{{ poster_base_url|add:poster_sizes.6|add:episode.poster_path }}" class="img-fluid rounded-start"
+                            style="height: 200px; width: auto; filter: blur(1rem); cursor: pointer">
+                            <i class="fa-solid fa-eye-slash fa-2x" style='position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white;'></i>
+                    {% else %}
+                        <div style='height: 200px; width: 355.55px; padding: 1rem; background-color: #E5E5E5;'>
+                            <i class="fa-solid fa-film" style='color: #CECFD1; height: 100px; position: relative; top: 50%; left: 50%; transform: translate(-50%, -50%)'></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    <div class="card-body" style='padding: 1rem'>
+                        <div class="row">
+                            <div class="col-8" style="width: fit-content">
+                                <h5 class="card-title" style="width: max-content">{{ forloop.counter }}. {{ episode.title }}</h5>
+                            </div>
+                            <div class="col text-start" style="padding: 0">
+                                {% if episode.runtime %}
+                                    <small class="text-muted">
+                                        {{ episode.get_human_runtime }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col text-end text-muted" style="width: max-content">
+                                {{ episode.air_date|date:'M j, Y' }}
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            {% if episode.overview %}
+                                {{ episode.overview }}
+                            {% else %}
+                                Could not find an overview for this episode.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+
+        $('.episode-poster img').each(function(i, obj) {
+            $(obj).attr('draggable', 'false');
+        })
+
+        $('.episode-poster').click(function() {
+            $(this).find('img').toggleClass('cleared');
+            var icon = $(this).find('svg.fa-eye-slash')
+            if (icon.is(':visible')) {
+                icon.hide();
+            } else {
+                icon.show();
+            }
+        })
+    })
+</script>
+{% endblock %}

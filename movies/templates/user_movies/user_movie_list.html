@@ -1,0 +1,397 @@
+{% extends 'collectio/base.html' %}
+{% load static %}
+
+{% block title %}My movies - {% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'styles/collection.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class='header'>
+        <div>
+            <h3>My Movies</h3>
+        </div>
+        <div class='search-container'>
+            <input class="search form-control" type="text" placeholder="Search"/>
+        </div>
+        <div class='dropdown' style='position: relative;'>
+            <button id='filters_collapse' class='btn btn-sm btn-primary' type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-filter"></i>
+            </button>
+            <ul class='dropdown-menu dropdown-menu-end'>
+                <li>
+                    <div id='filters'>
+
+                        {# Sort by select #}
+                        <div id="sort_filter">
+                            <label for="sort_input" class="form-label">Sort by</label>
+                            <div style="display: flex; gap: 1rem">
+                                <select id="sort_input" class="form-select">
+                                    {% for value, str in sort_fields.items %}
+                                        <option value={{ value }} {% if value == 'date_added' %}selected{% endif %}>{{ str }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-check" style="padding: 0">
+                                    <input type="checkbox" class="btn-check" id="sort_asc_input" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="sort_asc_input" title="Sort ascending">
+                                        <i class="fa-solid fa-arrow-down-short-wide"></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Status select #}
+                        <div id="status_filter">
+                            <label for="status_filter_input" class="form-label">Status</label>
+                            <select id="status_filter_input" class="form-select">
+                                <option value>-</option>
+                                {% for value, str in user_movie_list.model.STATUS_CHOICES %}
+                                    <option value={{ value }}>{{ str|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        {# Rating range #}
+                        <div id="rating_filter">
+                            <fieldset>
+                                <legend style="font-size: 1rem;">Rating</legend>
+                                <div class='rating-filter-container'>
+                                    <div style="flex-grow: 1">
+                                        <label class="form-label" style="font-size: 0.9rem;" for="min_rating_input">Min</label>
+                                        <input id="min_rating_input" class="form-control" type="number"
+                                            min="0" max="10" placeholder="-">
+                                    </div>
+
+                                    <div style="flex-grow: 1">
+                                        <label class="form-label" style="font-size: 0.9rem;" for="max_rating_input">Max</label>
+                                        <input id="max_rating_input" class="form-control" type="number"
+                                            min="0" max="10" placeholder="-">
+                                    </div>
+
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.9rem;" for="reset_filters"></label>
+                                        <button id="reset_filters" class="btn btn-danger" title="Reset all filters">
+                                            <i class="fa-solid fa-filter-circle-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    {% if user_movie_list %}
+    <div class='cards'>
+        {% for user_movie in user_movie_list %}
+            <div class="card-container">
+                <div class='card'>
+                    <div class='card-poster'>
+                        <img src={{ poster_base_url|add:poster_sizes.4|add:user_movie.movie.poster_path }}></img>
+                        <div class='card-info'>
+                            <i class="fa-solid fa-circle-info card-added-updated" 
+                                title='Added: {{ user_movie.date_created }}{% if user_movie.date_created != user_movie.date_updated %}&#10;Updated: {{ user_movie.date_updated }}{% endif %}'
+                                data-added='{{ user_movie.date_created|date:"c" }}' data-updated='{{ user_movie.date_updated|date:"c" }}'>
+                            </i>
+                            <h5 class='card-title'>{{ user_movie.movie.title }}</h5>
+                            <div class='card-release-date' style="margin-bottom: 1rem">{{ user_movie.movie.release_date }}</div>
+                            <div class='info-field card-status'>
+                                <div>status:</div>
+                                <div>{{ user_movie.status }}</div>
+                            </div>
+                            <div class='info-field card-rating'>
+                                <div>rating:</div>
+                                <div>{{ user_movie.rating|default:'-' }}</div>
+                            </div>
+                            <div class='info-field card-date_watched'>
+                                <div>date watched:</div>
+                                <div>{{ user_movie.date_watched|date:'M j, Y'|default:'-' }}</div>
+                            </div>
+                            Comment: <div class='card-comment'>{{ user_movie.comment|default:'-' }}</div>
+                            <div class='action-buttons'>
+                                <button class='btn btn-sm btn-primary button-edit' data-id="{{user_movie.id}}" data-title="{{user_movie.movie.title}}" data-url="{% url 'user_movie-update' user.username user_movie.id %}">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class='btn btn-sm btn-danger button-delete' data-title="{{user_movie.movie.title}}" data-url="{% url 'user_movie-delete' user.username user_movie.id %}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>                    
+                    <div class='status-ribbon'></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style='text-align: center'>
+        Looks empty here :/
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'scripts/alert.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            const alert_timeout = 5000;
+
+            $('#reset_filters').click(function() {
+                $('#sort_input').val('date_added').change();
+                $('#status_filter_input').val('').change();
+                $('#min_rating_input').val('-').change();
+                $('#max_rating_input').val('-').change();
+            });
+
+            $('#filters').click(function(e) {
+                e.stopPropagation();
+            });
+
+            $('#sort_input, #sort_asc_input').change(function() {
+                var cards = $('.card-container');
+                var sort_val = $('#sort_input').val();
+                var asc = $('#sort_asc_input').is(':checked');
+
+                switch(sort_val){
+                    case 'name':
+                        cards.sort(function (a, b) {
+                            const a_text = $(a).find('.card-title').text()
+                            const b_text = $(b).find('.card-title').text()
+                            return (asc ? a_text > b_text : a_text < b_text) ? 1 : -1;
+                        }).appendTo(".cards");
+                        break;
+                    case 'rating':
+                        cards.sort(function (a, b) {
+                            var a_rating = parseInt($(a).find('.card-rating > div:last-child').text());
+                            a_rating = a_rating ? a_rating : -1
+                            var b_rating = parseInt($(b).find('.card-rating > div:last-child').text());
+                            b_rating = b_rating ? b_rating : -1
+                            return (asc ? a_rating > b_rating : a_rating < b_rating) ? 1 : -1;
+                        }).appendTo(".cards");
+                        break;
+                    case 'release_date':
+                        cards.sort(function (a, b) {
+                            var a_date = new Date($(a).find('.card-release-date').text());
+                            a_date = isNaN(a_date) ? -1: a_date
+                            var b_date = new Date($(b).find('.card-release-date').text());
+                            b_date = isNaN(b_date) ? -1: b_date
+                            return (asc ? a_date > b_date : a_date < b_date) ? 1 : -1;
+                        }).appendTo(".cards");
+                        break;
+                    case 'date_watched':
+                        cards.sort(function (a, b) {
+                            var a_date = new Date($(a).find('.card-date-watched > div:last-child').text());
+                            a_date = isNaN(a_date) ? -1: a_date
+                            var b_date = new Date($(b).find('.card-date-watched > div:last-child').text());
+                            b_date = isNaN(b_date) ? -1: b_date
+                            return (asc ? a_date > b_date : a_date < b_date) ? 1 : -1;
+                        }).appendTo(".cards");
+                        break;
+                    case 'date_added':
+                        cards.sort(function (a, b) {
+                            var a_date = new Date($(a).find('.card-added-updated').data('added'));
+                            a_date = isNaN(a_date) ? -1: a_date
+                            var b_date = new Date($(b).find('.card-added-updated').data('added'));
+                            b_date = isNaN(b_date) ? -1: b_date
+                            return (asc ? a_date > b_date : a_date < b_date) ? 1 : -1;
+                        }).appendTo(".cards");
+                        break;
+                    case 'date_updated':
+                        cards.sort(function (a, b) {
+                            var a_date = new Date($(a).find('.card-added-updated').data('updated'));
+                            a_date = isNaN(a_date) ? -1: a_date
+                            var b_date = new Date($(b).find('.card-added-updated').data('updated'));
+                            b_date = isNaN(b_date) ? -1: b_date
+                            return (asc ? a_date > b_date : a_date < b_date) ? 1 : -1;
+                            console.log(a_date, b_date);
+                        }).appendTo(".cards");
+                        break;
+                }
+            });
+
+            $('#min_rating_input, #max_rating_input').change(function() {
+                var min_rating = $('#min_rating_input').val();
+                var max_rating = $('#max_rating_input').val();
+                var cards = $('.card-container');
+
+                if (min_rating) {
+                    min_rating = parseInt(min_rating);
+                } else {
+                    min_rating = -1;
+                }
+                if (max_rating) {
+                    max_rating = parseInt(max_rating);
+                } else {
+                    max_rating = 10;
+                }
+
+                $(cards).each(function(i, obj) {
+                    var card_rating = $(obj).find('.card-rating > div:last-child').text();
+                    if ($.isNumeric(card_rating)) {
+                        card_rating = parseInt(card_rating);
+                    } else {
+                        card_rating = -1;
+                    }
+                    if (!(min_rating <= card_rating && card_rating <= max_rating)) {
+                        $(obj).addClass('filtered-rating');
+                    } else {
+                        $(obj).removeClass('filtered-rating');
+                    }
+                });
+            });
+
+            $('#status_filter_input').change( function() {
+                var status = $(this).val();
+                var cards = $('.card-container');
+
+                $(cards).each(function(i, obj) {
+                    var card_status = $(obj).find('.card-status > div:last-child').text();
+
+                    if (card_status !== status && status) {
+                        $(obj).addClass('filtered-status');
+                    } else {
+                        $(obj).removeClass('filtered-status');
+                    }
+                });
+            });
+
+            {# search filter #}
+            $('.search').on('input', function() {
+                var search_text = $(this).val().toLowerCase();
+                var cards = $('.card-container');
+
+                $(cards).each(function(i, obj) {
+                    var card_title = $(obj).find('.card-title').text().toLowerCase();
+
+                    if (card_title.indexOf(search_text) < 0) {
+                        $(obj).addClass('filtered-search');
+                    } else {
+                        $(obj).removeClass('filtered-search');
+                    }
+                });
+            })
+
+            function setStatusRibbon(obj, status) {
+                var color;
+                switch(status){
+                    case 'watched':
+                        color = 'var(--status-green)';
+                        break;
+                    case 'watching':
+                        color = 'var(--status-blue)';
+                        break;
+                    case 'planning':
+                        color = 'var(--status-yellow';
+                        break;
+                    case 'on-hold':
+                        color = 'var(--status-grey)';
+                        break;
+                    case 'dropped':
+                        color = 'var(--status-red)';
+                        break;
+                }
+                obj.css('background-color', color);
+                obj.attr('title', status);
+            }
+            // Color every status ribbon based on status value
+            $('.card-container').each(function(i, obj) {
+                var status = $(obj).find('.card-status div:nth-child(2)').text();
+                var ribbon = $(obj).find('.status-ribbon')
+                setStatusRibbon(ribbon, status);
+            });
+
+            $('#content').on('click', '#form_container', function() {
+                $('#form_container').remove();
+            });
+
+            $('#content').on('click', '#form_container form', function(e) {
+                e.stopPropagation();
+            });
+
+            $('.button-delete').click(function() {
+                var url = $(this).data('url');
+                var title = $(this).data('title');
+                if (confirm(`Are you sure you want to remove ${title} from your collection?`)) {
+                    $.ajax({
+                        url: url,
+                        type: 'delete',
+                        headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                        success: function(data) {
+                            $(`div.card-container:contains('${title}')`).remove();
+                            addAlert('Successfully removed ' + title + '.', 'success');
+                        },
+                        error: function(data) {
+                            console.log(data);
+                            addAlert('Something went wrong.', 'danger');
+                        }
+                    });
+                }
+            });
+
+            $('.button-edit').click(function() {
+                var id = $(this).data('id')
+                var url = $(this).data('url');
+                var title = $(this).data('title');
+                
+                $.ajax({
+                    url: "{% url 'user_movie-get_update_form' %}",
+                    type: 'get',
+                    data: { 'id': id },
+                    success: function(data) {
+                        $('#content').prepend('<div id="form_container">' + data + '</div>');
+                        $('form').attr('data-url', url);
+                        $('form').attr('data-title', title);
+                        $('#form_container form').prepend(`<h5 style="margin-bottom: 1rem">Edit ${title}</h5>`);
+                        $('#form_container form select').addClass('form-select');
+                        $('#form_container form input:not([type=button]), #form_container form textarea').addClass('form-control');
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    }
+                });
+            })
+
+            $('#content').on('click', '#form_container form input#submit', function() {
+                var url = $('form').data('url');
+                var title = $('form').data('title')
+                
+                event.preventDefault()
+                $.ajax({
+                    url: url,
+                    type: 'patch',
+                    headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                    data: $('#form_container form').serialize(),
+                    success: function(data) {
+                                $('#form_container').remove();
+                                addAlert('Successfully updated ' + title + '.', 'success')
+                                var card = $('.card:contains(' + title + ')')
+                                $.each(data, function(key, value) {
+                                    var selector = key=='comment'? '.card-' + key : '.card-' + key + ' div:nth-child(2)'
+                                    $(card).find(selector).text(value);
+                                });
+                                if ('status' in data) {
+                                    var ribbon = $(card).find('.status-ribbon')
+                                    setStatusRibbon(ribbon, data['status']);
+                                }
+                            },
+                    error: function(data) {
+                                var errors = jQuery.parseJSON(data.responseJSON.errors);
+                                console.log(errors)
+                                if ($("input, select").next('p.error_message').length) $("input, select").nextAll('p.error_message').empty();
+                                for (var name in errors) {
+                                    for (var i in errors[name]) {
+                                        var $input = $("input[name='"+ name +"'], select[name='"+ name +"']");
+                                        $input.after("<p class='error_message'>" + errors[name][i].message + "</p>");
+                                    }
+                                }
+                            }
+                });
+            });
+            
+        })
+    </script>
+{% endblock %}

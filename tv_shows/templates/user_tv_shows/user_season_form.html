@@ -1,0 +1,51 @@
+<form method="post">{% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="field-wrapper" hidden>
+        {{ form.user.errors }}
+        <label for="{{ form.user.id_for_label }}" class='form-label'>User:</label>
+        {{ form.user }}
+    </div>
+
+    <div class="field-wrapper" hidden>
+        {{ form.season.errors }}
+        <label for="{{ form.season.id_for_label }}" class='form-label'>Season:</label>
+        {{ form.season }}
+    </div>
+
+    <div style='display: flex; gap: 1rem;'>
+        <div style='flex: 1 1 0px'>
+            {{ form.rating.errors }}
+            <label for="{{ form.rating.id_for_label }}" class='form-label'>Rating:</label>
+            {{ form.rating }}
+        </div>
+
+        <div style='flex: 1 1 0px'>
+            {{ form.episodes_watched.errors }}
+            <label for="{{ form.episodes_watched.id_for_label }}" class='form-label'>Episodes watched:</label>
+            {{ form.episodes_watched }}
+        </div>
+    </div>
+
+    <div style='display: flex; gap: 1rem;'>
+        <div style='flex: 1 1 0px'>
+            {{ form.date_started.errors }}
+            <label for="{{ form.date_started.id_for_label }}" class='form-label'>Date started:</label>
+            {{ form.date_started }}
+        </div>
+
+        <div style='flex: 1 1 0px'>
+            {{ form.date_finished.errors }}
+            <label for="{{ form.date_finished.id_for_label }}" class='form-label'>Date finished:</label>
+            {{ form.date_finished }}
+        </div>
+    </div>
+
+    <div class="field-wrapper">
+        {{ form.comment.errors }}
+        <label for="{{ form.comment.id_for_label }}" class='form-label'>Comment:</label>
+        {{ form.comment }}
+    </div>
+
+    <input class='btn btn-primary' type="button" id="submit" value="Save" style='width: 100%'>
+</form>
